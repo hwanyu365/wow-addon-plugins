@@ -1,0 +1,17 @@
+{
+  "name": "curseforge",
+  "version": "0.1.0",
+  "description": "태그 기준으로 WoW 애드온을 패키징해 CurseForge 에 release 로 업로드",
+  "author": {
+    "name": "hwanyu365"
+  },
+  "userConfig": {
+    "api_token": {
+      "type": "string",
+      "title": "CurseForge API token",
+      "description": "https://legacy.curseforge.com/account/api-tokens 에서 발급",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}

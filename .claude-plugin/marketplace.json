@@ -1,0 +1,17 @@
+{
+  "name": "wow-addon-plugins",
+  "owner": {
+    "name": "hwanyu365"
+  },
+  "metadata": {
+    "description": "WoW 애드온 개발·배포 도구"
+  },
+  "plugins": [
+    {
+      "name": "curseforge",
+      "source": "./plugins/curseforge",
+      "description": "태그 기준으로 애드온을 패키징해 CurseForge 에 release 로 업로드",
+      "category": "deployment"
+    }
+  ]
+}
