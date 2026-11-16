@@ -117,7 +117,7 @@ upload : prepare → multipart POST → file_id
 
 ## 7. 테스트 및 검증 기준
 
-테스트: `plugins/curseforge/server/curseforge.test.py` (unittest, 네트워크 없음). 실행 `python plugins/curseforge/server/curseforge.test.py`.
+테스트: `test/plugins/curseforge/server/curseforge.test.py` (unittest, 네트워크 없음). 실행 `python test/plugins/curseforge/server/curseforge.test.py`.
 
 | TC | 시나리오 | 대상 | 비고 |
 | --- | --- | --- | --- |
