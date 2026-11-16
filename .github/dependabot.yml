@@ -9,3 +9,11 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+  # workflow 안의 npm install -g 는 추적되지 않는다 → CI 가 쓰는 claude 버전을 이 package.json 에서 읽는다.
+  - package-ecosystem: npm
+    directory: /.github/claude-code
+    schedule:
+      interval: monthly
+    groups:
+      claude-code:
+        patterns: ["*"]
