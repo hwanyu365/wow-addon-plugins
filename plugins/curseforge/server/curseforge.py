@@ -1,4 +1,5 @@
 """CurseForge 배포용 MCP 서버. 태그 시점 애드온 파일을 zip 으로 묶어 CurseForge 에 release 로 올린다."""
+import http.client
 import io
 import json
 import os
@@ -104,6 +105,10 @@ def build_package(repo, tag):
     project_id = fields.get("X-Curse-Project-ID")
     if not project_id:
         raise DeployError(f"{tocs[0]} 에 ## X-Curse-Project-ID 가 없습니다.")
+    try:
+        interface_to_versions(fields.get("Interface", ""))
+    except ValueError:
+        raise DeployError(f"{tocs[0]} 의 ## Interface 가 없거나 숫자가 아닙니다: '{fields.get('Interface', '')}'") from None
 
     with tarfile.open(fileobj=io.BytesIO(_git(repo, "archive", "--format=tar", tag))) as tar:
         members = [m for m in tar.getmembers() if m.isfile() and is_packaged(m.name)]
@@ -131,17 +136,33 @@ def build_package(repo, tag):
 def _request(req):
     try:
         with _urlopen(req, timeout=300) as r:
-            return json.loads(r.read())
+            body = r.read()
     except urllib.error.HTTPError as e:
-        raise DeployError(f"HTTP {e.code} {req.full_url}: {e.read().decode('utf-8', 'replace')[:500]}")
+        text = e.read().decode("utf-8", "replace")
+        token = req.get_header("X-api-token")
+        if token:
+            text = text.replace(token, "***")
+        raise DeployError(f"HTTP {e.code} {req.full_url}: {text[:500]}")
     except urllib.error.URLError as e:
         raise DeployError(f"{req.full_url} 연결 실패: {e.reason}")
+    except (OSError, http.client.HTTPException) as e:
+        raise DeployError(f"{req.full_url} 응답을 받지 못했습니다 ({type(e).__name__}) → 요청이 처리됐는지 알 수 없습니다. 업로드였다면 재시도 전에 CurseForge Files 탭을 확인하세요.") from None
+    try:
+        return json.loads(body)
+    except ValueError:
+        raise DeployError(f"{req.full_url} 응답을 JSON 으로 읽지 못했습니다 → 요청이 처리됐는지 알 수 없습니다. 업로드였다면 재시도 전에 CurseForge Files 탭을 확인하세요.") from None
 
 
 def prepare(repo, tag, token):
     pkg = build_package(repo, tag)
     if not token:
         raise DeployError("CurseForge 토큰(api_token)이 설정되지 않았습니다. /plugin → curseforge → Configure options 에서 입력한 뒤 Claude Code 를 재시작하세요.")
+    with zipfile.ZipFile(pkg["zip"]) as z:
+        leaked = [n for n in z.namelist() if token.encode() in z.read(n)]
+    if token in pkg["changelog"]:
+        leaked.append("CHANGELOG.md 의 이번 버전 섹션")
+    if leaked:
+        raise DeployError(f"공개될 내용에 CurseForge 토큰 문자열이 들어 있어 중단합니다: {', '.join(leaked)}")
     available = _request(urllib.request.Request(f"{API}/game/versions", headers={"X-Api-Token": token}))
     return {**pkg, "game_versions": resolve_game_versions(interface_to_versions(pkg["interface"]), available)}
 
@@ -163,7 +184,11 @@ def upload(repo, tag, token):
         f"{API}/projects/{p['project_id']}/upload-file", data=body, method="POST",
         headers={"X-Api-Token": token, "Content-Type": f"multipart/form-data; boundary={boundary}"},
     )
-    return {**p, "file_id": _request(req).get("id")}
+    resp = _request(req)
+    file_id = resp.get("id") if isinstance(resp, dict) else None
+    if not file_id:
+        raise DeployError("업로드 응답에 파일 ID 가 없습니다 → 올라갔을 수 있습니다. 재시도 전에 CurseForge Files 탭을 확인하세요.")
+    return {**p, "file_id": file_id}
 
 
 TOOL_SCHEMA = {
@@ -188,7 +213,7 @@ def handle(msg, token):
         result = {
             "protocolVersion": params.get("protocolVersion", "2025-06-18"),
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "curseforge", "version": "0.1.0"},
+            "serverInfo": {"name": "curseforge", "version": "0.1.1"},
         }
     elif method == "ping":
         result = {}
@@ -201,6 +226,8 @@ def handle(msg, token):
             text, is_error = json.dumps(fn(args["repo"], args["tag"], token), ensure_ascii=False, indent=2), False
         except Exception as e:  # 서버가 죽으면 세션 내내 도구가 사라진다 → 모든 실패를 도구 오류로 돌려준다
             text, is_error = f"{type(e).__name__}: {e}", True
+        if token:
+            text = text.replace(token, "***")
         result = {"content": [{"type": "text", "text": text}], "isError": is_error}
     else:
         return {"jsonrpc": "2.0", "id": msg["id"], "error": {"code": -32601, "message": f"unknown method {method}"}}
@@ -208,6 +235,8 @@ def handle(msg, token):
 
 
 def main():
+    if sys.version_info < (3, 10):
+        sys.exit(f"curseforge MCP 서버는 Python 3.10 이상이 필요합니다 (현재 {sys.version_info[0]}.{sys.version_info[1]}).")
     token = os.environ.get("CURSEFORGE_TOKEN", "")
     if token.startswith("${"):  # userConfig 미설정이면 치환되지 않은 자리표시자가 그대로 들어올 수 있다
         token = ""

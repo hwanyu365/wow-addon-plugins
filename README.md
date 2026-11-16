@@ -19,7 +19,7 @@ claude plugin install curseforge@wow-addon-plugins
 
 ### 준비
 
-- Python 3 (표준 라이브러리만 사용)
+- Python 3.10 이상 (표준 라이브러리만 사용)
 - CurseForge 에 프로젝트가 이미 생성되어 있어야 한다 → 이 플러그인은 프로젝트를 만들지 않고 파일만 올린다.
 - 애드온 저장소 조건
   - 저장소 루트에 `*.toc` 가 정확히 하나
