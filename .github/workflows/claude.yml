@@ -61,7 +61,7 @@ jobs:
         with:
           node-version: "22"
       - if: steps.secret.outputs.ok == 'true'
-        run: npm install -g @anthropic-ai/claude-code@2.1.325
+        run: npm install -g "@anthropic-ai/claude-code@$(node -p "require('./.github/claude-code/package.json').dependencies['@anthropic-ai/claude-code']")"
       - if: steps.secret.outputs.ok == 'true'
         uses: anthropics/claude-code-action@4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8 # v1.0.275
         with:
