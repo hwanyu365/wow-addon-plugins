@@ -61,7 +61,10 @@ jobs:
         with:
           node-version: "22"
       - if: steps.secret.outputs.ok == 'true'
-        run: npm install -g "@anthropic-ai/claude-code@$(node -p "require('./.github/claude-code/package.json').dependencies['@anthropic-ai/claude-code']")"
+        # agent Bash(하위 프로세스 격리)는 setup-node 가 PATH 에 올린 경로의 claude 를 찾지 못한다 → 시스템 경로에 둔다.
+        run: |
+          npm install -g "@anthropic-ai/claude-code@$(node -p "require('./.github/claude-code/package.json').dependencies['@anthropic-ai/claude-code']")"
+          sudo install -m 0755 "$(readlink -f "$(command -v claude)")" /usr/local/bin/claude
       - if: steps.secret.outputs.ok == 'true'
         uses: anthropics/claude-code-action@4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8 # v1.0.275
         with:
