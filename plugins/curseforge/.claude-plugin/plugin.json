@@ -1,6 +1,6 @@
 {
   "name": "curseforge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "태그 기준으로 WoW 애드온을 패키징해 CurseForge 에 release 로 업로드",
   "author": {
     "name": "hwanyu365"
