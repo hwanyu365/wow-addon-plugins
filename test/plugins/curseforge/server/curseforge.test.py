@@ -12,7 +12,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
-_spec = importlib.util.spec_from_file_location("curseforge", Path(__file__).with_name("curseforge.py"))
+_spec = importlib.util.spec_from_file_location("curseforge", Path(__file__).resolve().parents[4] / "plugins/curseforge/server/curseforge.py")
 cf = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(cf)
 
