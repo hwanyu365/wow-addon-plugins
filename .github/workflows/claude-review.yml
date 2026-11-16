@@ -101,7 +101,9 @@ jobs:
             ## 결론
             - Blocking 유무와 머지 판정
             - 실제로 돌린 명령과 결과 / 돌리지 못한 것 (검증 명령·테스트는 같은 PR 의 CI 가 돌린다 → 이 실행은 돌리지 않는다. 남기는 것은 막힌 이유와 필요한 것을 적는다)
+          # action 은 조건이 맞으면 권한 모드를 auto 로 바꾼다 → allowedTools 밖 호출이 거부되지 않고 분류기로 넘어가므로 모드를 고정한다.
           claude_args: |
+            --permission-mode default
             --max-turns 60
             --allowedTools "Edit(./.claude-review/summary.md),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
       # 요약을 올리지 못하고 끝나도 action 은 성공으로 남는다 → 현재 head 의 요약이 없으면 check 를 실패시킨다. 작성자 판정은 merge-gate.sh 와 같다.
