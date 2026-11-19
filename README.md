@@ -1,51 +1,51 @@
 # wow-addon-plugins
 
-World of Warcraft 애드온 개발·배포용 Claude Code 플러그인 마켓플레이스.
+A Claude Code plugin marketplace for World of Warcraft addon development and release.
 
-## 설치
+## Installation
 
 ```sh
 claude plugin marketplace add hwanyu365/wow-addon-plugins
 claude plugin install curseforge@wow-addon-plugins
 ```
 
-## 플러그인
+## Plugins
 
-| 플러그인 | 명령 | 하는 일 |
+| Plugin | Command | What it does |
 | --- | --- | --- |
-| `curseforge` | `/curseforge:deploy <태그>` | 태그 시점의 애드온을 zip 으로 패키징해 CurseForge 에 release 로 업로드 |
+| `curseforge` | `/curseforge:deploy <tag>` | Packages the addon at the tag into a zip and uploads it to CurseForge as a release |
 
 ## curseforge
 
-### 준비
+### Prerequisites
 
-- Python 3.10 이상 (표준 라이브러리만 사용)
-- CurseForge 에 프로젝트가 이미 생성되어 있어야 한다 → 이 플러그인은 프로젝트를 만들지 않고 파일만 올린다.
-- 애드온 저장소 조건
-  - 저장소 루트에 `*.toc` 가 정확히 하나
-  - TOC 에 `## Version`(태그에서 `v` 를 뗀 값), `## Interface`, `## X-Curse-Project-ID`
-  - `CHANGELOG.md` 에 `## [<버전>]` 섹션
-  - 태그가 원격(origin)에 push 되어 있음
+- Python 3.10 or later (standard library only)
+- The project must already exist on CurseForge → this plugin does not create projects, it only uploads files.
+- Addon repository requirements
+  - Exactly one `*.toc` at the repository root
+  - `## Version` (the tag without `v`), `## Interface` and `## X-Curse-Project-ID` in the TOC
+  - A `## [<version>]` section in `CHANGELOG.md`
+  - The tag is pushed to the remote (origin)
 
-### API 토큰
+### API token
 
-- 토큰은 개발자마다 자기 것을 쓴다. 이 저장소에는 토큰이 없다.
-- 발급: https://legacy.curseforge.com/account/api-tokens
-- 플러그인의 `userConfig` 민감 값(`api_token`)으로 입력한다. 민감 값은 `settings.json` 이 아니라 OS 보안 자격 증명 저장소에 저장된다.
-- 입력 시점: 세션의 `/plugin` 에서 설치·활성화할 때 묻는다. 셸의 `claude plugin install` 은 묻지 않으므로 설치 뒤 아래 명령으로 입력한다.
-- 입력·변경: 세션에서 `/plugin configure curseforge@wow-addon-plugins`, 또는 `/plugin` → Installed → Configure options
-- 토큰이 없으면 `/curseforge:deploy` 는 네트워크 요청 없이 실패한다.
+- Each developer uses their own token. This repository contains no token.
+- Get one at: https://legacy.curseforge.com/account/api-tokens
+- Enter it as the plugin's sensitive `userConfig` value (`api_token`). Sensitive values are stored in the OS secure credential store, not in `settings.json`.
+- When it is asked: on install/enable via `/plugin` in a session. `claude plugin install` in the shell does not ask, so enter it with the command below after installing.
+- Enter or change: `/plugin configure curseforge@wow-addon-plugins` in a session, or `/plugin` → Installed → Configure options
+- Without a token, `/curseforge:deploy` fails without making any network request.
 
-상세: [Claude Code 플러그인 user configuration](https://code.claude.com/docs/en/plugins/manifest-reference.md#user-configuration)
+Details: [Claude Code plugin user configuration](https://code.claude.com/docs/en/plugins/manifest-reference.md#user-configuration)
 
-### 패키징 규칙
+### Packaging rules
 
-- 태그 시점의 git 추적 파일을 `<애드온 이름>/` 아래에 담는다.
-- 제외: `.` 으로 시작하는 경로, 최상위 `docs/`·`scripts/`, `*.md`, `*.test.lua`
-- 출력: `<저장소>/dist/<애드온 이름>-<버전>.zip`
+- Git-tracked files at the tag are placed under `<addon name>/`.
+- Excluded: paths starting with `.`, top-level `docs/` and `scripts/`, `*.md`, `*.test.lua`
+- Output: `<repository>/dist/<addon name>-<version>.zip`
 
-상세 스펙: [docs/spec_curseforge.md](docs/spec_curseforge.md)
+Full spec: [docs/spec_curseforge.md](docs/spec_curseforge.md)
 
-## 라이선스
+## License
 
 [MIT](LICENSE)
