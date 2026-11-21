@@ -75,7 +75,7 @@ jobs:
           additional_permissions: |
             contents: read
             actions: read
-          # action 은 조건이 맞으면 권한 모드를 auto 로 바꾼다 → allowedTools 밖 호출이 거부되지 않고 분류기로 넘어가므로 모드를 고정한다.
+          # action 은 opt-out 조건이 없으면 auto mode 로 시작해 허용 규칙 밖 호출을 안전성 검토에 넘긴다 → 권한 모드를 정해 허용 목록을 상한으로 둔다.
           claude_args: |
             --permission-mode acceptEdits
             --max-turns 40
